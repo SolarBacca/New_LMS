@@ -28,10 +28,37 @@ const props = defineProps<{
 
 const url = computed(() => props.topicId ? `/api/topics/${props.topicId}` : '');
 
-const { data: topicData, status, error } = await useFetch<TopicDetail>(url, {
+const { data: topicData, status, error, refresh } = await useFetch<TopicDetail>(url, {
     immediate: !!props.topicId,
     watch: [url]
-})
+});
+
+const messageText = ref('');
+const isSending = ref(false);
+
+async function sendMessage() {
+    if (!messageText.value.trim() || !props.topicId || isSending.value) return;
+
+    isSending.value = true;
+    try {
+        await $fetch('/api/messages', {
+            method: 'POST',
+            body: {
+                topicId: props.topicId,
+                content: messageText.value
+            }
+        });
+
+        messageText.value = "";
+
+        await refresh();
+    } catch (e) {
+        console.error("Error sending message:", e);
+        alert("Не удалось отправить сообщение");
+    } finally {
+        isSending.value = false;
+    }
+}
 
 </script>
 
@@ -40,10 +67,6 @@ const { data: topicData, status, error } = await useFetch<TopicDetail>(url, {
 
         <div v-if="!topicId" class="empty-state">
             <p>Выберите тему слева, чтобы начать обсуждение</p>
-        </div>
-
-        <div v-else-if="error" class="error-state">
-            <p style="color: red;">Ошибка загрузки: {{ error.message }}</p>
         </div>
 
         <div v-else-if="status === 'pending'" class="loading">
@@ -74,7 +97,8 @@ const { data: topicData, status, error } = await useFetch<TopicDetail>(url, {
         </div>
 
         <div class="input-dock" v-if="topicData">
-            <input type="text" placeholder="Введите сообщение...">
+            <input type="text" placeholder="Введите сообщение..." v-model="messageText" @keydown.enter="sendMessage"
+                :disabled="isSending">
         </div>
     </div>
 </template>
