@@ -1,21 +1,23 @@
-import { messages } from "../database/schema";
+import { messages } from "~~/server/database/schema";
+import { getUserFromSession } from "../utils/auth";
 
 export default defineEventHandler(async (event) => {
+    const user = await getUserFromSession(event);
+    if (!user) {
+        throw createError({ statusCode: 401, message: "Unauthorized" });
+    }
+
     const body = await readBody(event);
 
     if (!body.topicId || !body.content) {
-        throw createError({
-            statusCode: 400,
-            statusMessage: "Topic ID and content are required",
-        });
+        throw createError({ statusCode: 400, message: "Content required" });
     }
 
-    // !!!TODO: CHANGE THIS LATER
     const newMessage = await db
         .insert(messages)
         .values({
             topicId: body.topicId,
-            userId: 1, // HARDCODE
+            userId: user.id,
             content: body.content,
             isPrivate: false,
         })

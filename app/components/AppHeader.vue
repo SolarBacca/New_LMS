@@ -1,4 +1,20 @@
 <script setup lang="ts">
+import { useUser } from '~/composables/useUser';
+
+
+const user = useUser();
+const router = useRouter();
+
+const handleLogout = async () => {
+    try {
+        await $fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+        console.error('Ошибка при выходе:', e);
+    } finally {
+        user.value = null;
+        await router.push('/login');
+    }
+};
 
 </script>
 
@@ -8,52 +24,69 @@
             <img src="/logo.svg" alt="logo">
             <h1>Платформа</h1>
         </div>
-        <nav>
+        <nav v-if="user">
             <ul>
-                <li><a>Выход</a></li>
+                <li class="user-info">
+                    {{ user.name }} <span class="role">({{ user.role }})</span>
+                </li>
+                <li><a @click="handleLogout" class="logout-btn">Выход</a></li>
             </ul>
         </nav>
     </header>
 </template>
 
-<style>
+<style scoped>
 header {
     display: flex;
     justify-content: space-around;
     align-items: center;
     height: 10%;
-    cursor: pointer;
-    user-select: none;
+    background: #fff;
+    border-bottom: 1px solid #eee;
     color: #212b43;
 }
 
 .main-name {
     display: flex;
-    gap: 10px;
-}
-
-.main-name img {
-    width: 4rem;
+    align-items: center;
+    gap: 15px;
 }
 
 .main-name h1 {
     font-weight: 600;
-    font-size: 40px;
+    font-size: 28px;
 }
 
 nav ul {
     display: flex;
     align-items: center;
     list-style-type: none;
-    overflow: hidden;
+    gap: 20px;
 }
 
-nav ul li {
-    margin: 0 10px;
-    font-size: 22px;
+.user-info {
+    font-size: 16px;
+    font-weight: 500;
 }
 
-nav ul li a:hover {
-    color: red;
+.role {
+    font-size: 12px;
+    color: #666;
+    background: #eee;
+    padding: 2px 6px;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+.logout-btn {
+    cursor: pointer;
+    color: #dc2626;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.logout-btn:hover {
+    color: #b91c1c;
+    text-decoration: underline;
 }
 </style>

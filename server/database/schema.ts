@@ -104,3 +104,18 @@ export const departmentsRelations = relations(departments, ({ one, many }) => ({
     }),
     groups: many(groups),
 }));
+
+export const sessions = sqliteTable("sessions", {
+    id: text("id").primaryKey(),
+    userId: integer("user_id")
+        .references(() => users.id)
+        .notNull(),
+    expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+});
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+    user: one(users, {
+        fields: [sessions.userId],
+        references: [users.id],
+    }),
+}));
