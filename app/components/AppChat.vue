@@ -28,13 +28,25 @@ const props = defineProps<{
 
 const url = computed(() => props.topicId ? `/api/topics/${props.topicId}` : '');
 
-const { data: topicData, status, error, refresh } = await useFetch<TopicDetail>(url, {
+const { data: topicData, status, refresh } = await useFetch<TopicDetail>(url, {
     immediate: !!props.topicId,
     watch: [url]
 });
 
 const messageText = ref('');
 const isSending = ref(false);
+const containerRef = ref<HTMLElement | null>(null);
+
+const scrollToBottom = async () => {
+    await nextTick();
+    if (containerRef.value) {
+        containerRef.value.scrollTop = containerRef.value.scrollHeight;
+    }
+};
+
+watch(topicData, () => {
+    scrollToBottom();
+}, { deep: true });
 
 async function sendMessage() {
     if (!messageText.value.trim() || !props.topicId || isSending.value) return;
@@ -50,7 +62,6 @@ async function sendMessage() {
         });
 
         messageText.value = "";
-
         await refresh();
     } catch (e) {
         console.error("Error sending message:", e);
@@ -59,7 +70,6 @@ async function sendMessage() {
         isSending.value = false;
     }
 }
-
 </script>
 
 <template>
@@ -73,25 +83,26 @@ async function sendMessage() {
             <p>Загрузка сообщений...</p>
         </div>
 
-        <div v-else-if="topicData">
+        <div v-else-if="topicData" class="chat-layout">
             <div class="header">
                 <h2>{{ topicData.title }}</h2>
                 <p>Преподаватель: {{ topicData.author?.name }}</p>
             </div>
 
-            <div class="messages-list">
-                <div class="message system-message">
-                    <strong>Материал:</strong> {{ topicData.content }}
-                </div>
+            <div class="messages-container" ref="containerRef">
+                <div class="messages-list">
+                    <div class="message system-message">
+                        <strong>Материал:</strong> {{ topicData.content }}
+                    </div>
 
-                <div v-for="msg in topicData.messages" :key="msg.id" class="message" :class="{ 'my-message': false }">
-                    <div class="msg-author">{{ msg.user.name }}</div>
-                    <div class="msg-content">{{ msg.content }}</div>
-                    <div class="msg-time">
-                        {{ new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                    <div v-for="msg in topicData.messages" :key="msg.id" class="message">
+                        <div class="msg-author">{{ msg.user.name }}</div>
+                        <div class="msg-content">{{ msg.content }}</div>
+                        <div class="msg-time">
+                            {{ new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                        </div>
                     </div>
                 </div>
-
             </div>
 
         </div>
@@ -100,22 +111,35 @@ async function sendMessage() {
             <input type="text" placeholder="Введите сообщение..." v-model="messageText" @keydown.enter="sendMessage"
                 :disabled="isSending">
         </div>
+
     </div>
 </template>
 
-<style>
+<style scoped>
 .chat-window {
     background-color: aliceblue;
     position: relative;
     height: 100%;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+}
+
+.chat-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
 }
 
 .messages-container {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 60px;
+    min-height: 0;
+    padding-bottom: 80px;
+
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
 }
 
 .messages-list {
@@ -129,6 +153,7 @@ async function sendMessage() {
     background: white;
     padding: 15px;
     border-bottom: 1px solid #eee;
+    flex-shrink: 0;
 }
 
 .empty-state,
@@ -175,6 +200,7 @@ async function sendMessage() {
     height: 60px;
     background-color: rgb(19, 38, 74);
     display: flex;
+    z-index: 10;
 }
 
 .input-dock>input {
