@@ -9,11 +9,17 @@ export async function getUserFromSession(event: H3Event) {
     const session = await db.query.sessions.findFirst({
         where: and(
             eq(sessions.id, sessionId),
-            gt(sessions.expiresAt, new Date()) // Проверяем, что не истекла
+            gt(sessions.expiresAt, new Date())
         ),
         with: {
             user: {
-                columns: { id: true, name: true, role: true, email: true },
+                columns: {
+                    id: true,
+                    name: true,
+                    role: true,
+                    email: true,
+                    groupId: true,
+                },
             },
         },
     });
