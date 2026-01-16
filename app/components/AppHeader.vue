@@ -34,6 +34,9 @@ const handleLogout = async () => {
                 <li class="admin-link" v-if="user.role === 'admin'">
                     <RouterLink to="/admin/departments">Кафедры</RouterLink>
                 </li>
+                <li class="admin-link" v-if="user.role === 'head'">
+                    <RouterLink to="/head/dashboard">Управление кафедрой</RouterLink>
+                </li>
                 <li class="user-info">
                     {{ user.name }} <span class="role">({{ user.role }})</span>
                 </li>

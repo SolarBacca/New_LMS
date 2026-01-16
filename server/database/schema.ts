@@ -1,4 +1,9 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import {
+    sqliteTable,
+    text,
+    integer,
+    primaryKey,
+} from "drizzle-orm/sqlite-core";
 import { relations, sql } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
@@ -36,14 +41,20 @@ export const subjects = sqliteTable("subjects", {
     description: text("description"),
 });
 
-export const groupSubjects = sqliteTable("group_subjects", {
-    groupId: integer("group_id")
-        .references(() => groups.id, { onDelete: "cascade" })
-        .notNull(),
-    subjectId: integer("subject_id")
-        .references(() => subjects.id, { onDelete: "cascade" })
-        .notNull(),
-});
+export const groupSubjects = sqliteTable(
+    "group_subjects",
+    {
+        groupId: integer("group_id")
+            .references(() => groups.id, { onDelete: "cascade" })
+            .notNull(),
+        subjectId: integer("subject_id")
+            .references(() => subjects.id, { onDelete: "cascade" })
+            .notNull(),
+    },
+    (t) => ({
+        pk: primaryKey({ columns: [t.groupId, t.subjectId] }),
+    })
+);
 
 export const topics = sqliteTable("topics", {
     id: integer("id").primaryKey({ autoIncrement: true }),

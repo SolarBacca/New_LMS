@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-const { data: myGroups, refresh: refreshGroups } = await useFetch<any>('/api/head/groups');
+const { data: myGroups, refresh: refreshGroups, error } = await useFetch<any>('/api/head/groups');
 const { data: allSubjects, refresh: refreshSubjects } = await useFetch<any>('/api/head/subjects');
 
 const newGroup = ref('');
@@ -33,7 +33,7 @@ const createSubject = async () => {
 const assignSubject = async () => {
     if (!selectedGroupId.value || !selectedSubjectId.value) return;
 
-    await $fetch('/api/head/curriculum', {
+    const response = await $fetch<any>('/api/head/curriculum', {
         method: 'POST',
         body: {
             groupId: selectedGroupId.value,
@@ -41,7 +41,9 @@ const assignSubject = async () => {
         }
     });
 
-    alert('Предмет назначен!');
+    if (response.success) alert('Предмет назначен!');
+    else alert(response.message);
+
     selectedGroupId.value = null;
     selectedSubjectId.value = null;
 };
@@ -51,7 +53,11 @@ const assignSubject = async () => {
     <div class="head-dashboard">
         <h1>Панель кафедры</h1>
 
-        <div class="grid-layout">
+        <div v-if="error" class="error">
+            У вас нет прав для просмотра этой страницы.
+        </div>
+
+        <div v-else class="grid-layout">
             <div class="card">
                 <h3>👥 Мои Группы</h3>
                 <div class="add-box">
