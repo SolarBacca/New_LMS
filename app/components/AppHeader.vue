@@ -22,12 +22,17 @@ const handleLogout = async () => {
     <header>
         <div class="main-name">
             <img src="/logo.svg" alt="logo">
-            <h1>Платформа</h1>
+            <h1>
+                <RouterLink style="text-decoration: none; color: inherit;" to="/">Платформа</RouterLink>
+            </h1>
         </div>
         <nav v-if="user">
             <ul>
-                <li class="admin-link" v-if="user && user.role === 'admin'">
-                    <RouterLink to="/admin/users">Управление</RouterLink>
+                <li class="admin-link" v-if="user.role === 'admin'">
+                    <RouterLink to="/admin/users">Пользователи</RouterLink>
+                </li>
+                <li class="admin-link" v-if="user.role === 'admin'">
+                    <RouterLink to="/admin/departments">Кафедры</RouterLink>
                 </li>
                 <li class="user-info">
                     {{ user.name }} <span class="role">({{ user.role }})</span>
