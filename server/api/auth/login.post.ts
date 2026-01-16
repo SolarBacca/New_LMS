@@ -31,6 +31,13 @@ export default defineEventHandler(async (event) => {
         });
     }
 
+    if (!user.isApproved) {
+        throw createError({
+            statusCode: 403,
+            message: "Ваш аккаунт ожидает одобрения администратора",
+        });
+    }
+
     const token = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
 

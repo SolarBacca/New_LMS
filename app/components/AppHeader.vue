@@ -26,6 +26,9 @@ const handleLogout = async () => {
         </div>
         <nav v-if="user">
             <ul>
+                <li class="admin-link" v-if="user && user.role === 'admin'">
+                    <RouterLink to="/admin/users">Управление</RouterLink>
+                </li>
                 <li class="user-info">
                     {{ user.name }} <span class="role">({{ user.role }})</span>
                 </li>
@@ -88,5 +91,11 @@ nav ul {
 .logout-btn:hover {
     color: #b91c1c;
     text-decoration: underline;
+}
+
+.admin-link * {
+    font-weight: 500;
+    color: rgb(175, 144, 29);
+    text-decoration: none;
 }
 </style>

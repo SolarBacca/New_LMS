@@ -74,6 +74,25 @@ export const messages = sqliteTable("messages", {
     ),
 });
 
+export const usersRelations = relations(users, ({ one }) => ({
+    group: one(groups, {
+        fields: [users.groupId],
+        references: [groups.id],
+    }),
+    session: one(sessions, {
+        fields: [users.id],
+        references: [sessions.userId],
+    }),
+}));
+
+export const groupsRelations = relations(groups, ({ one, many }) => ({
+    department: one(departments, {
+        fields: [groups.departmentId],
+        references: [departments.id],
+    }),
+    users: many(users),
+}));
+
 export const topicsRelations = relations(topics, ({ many, one }) => ({
     messages: many(messages),
     author: one(users, {
