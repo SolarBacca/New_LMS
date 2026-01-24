@@ -17,14 +17,10 @@ export default defineEventHandler(async (event) => {
         .set({
             role: body.role,
             isApproved: body.isApproved,
+            groupId: body.groupId || null,
         })
         .where(eq(users.id, Number(id)))
-        .returning({
-            id: users.id,
-            name: users.name,
-            role: users.role,
-            isApproved: users.isApproved,
-        })
+        .returning({ id: users.id, name: users.name, role: users.role })
         .get();
 
     return updatedUser;

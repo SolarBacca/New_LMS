@@ -2,6 +2,7 @@
 
 // TODO: Надо поменять 'any' на нормальный интерфейс (мне лень) 
 const { data: users, refresh, error } = await useFetch<any>('/api/admin/users');
+const { data: allGroups } = await useFetch<any>('/api/admin/groups');
 
 const updateUser = async (user: any) => {
     try {
@@ -9,7 +10,8 @@ const updateUser = async (user: any) => {
             method: 'PUT',
             body: {
                 role: user.role,
-                isApproved: user.isApproved
+                isApproved: user.isApproved,
+                groupId: user.groupId
             }
         });
     } catch (e) {
@@ -54,8 +56,12 @@ const roles = {
                         </td>
                         <td>{{ u.email }}</td>
                         <td>
-                            <span v-if="u.group" class="badge-group">{{ u.group.name }}</span>
-                            <span v-else class="text-muted">-</span>
+                            <select v-model="u.groupId" @change="updateUser(u)" class="group-select">
+                                <option :value="null">-- Без группы --</option>
+                                <option v-for="g in allGroups" :key="g.id" :value="g.id">
+                                    {{ g.name }}
+                                </option>
+                            </select>
                         </td>
                         <td>
                             <select v-model="u.role" @change="updateUser(u)">
@@ -201,5 +207,12 @@ input:checked+.slider:before {
 .status-label {
     font-size: 0.85rem;
     color: #666;
+}
+
+.group-select {
+    padding: 6px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    max-width: 150px;
 }
 </style>

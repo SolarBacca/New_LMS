@@ -1,42 +1,43 @@
 <script setup lang="ts">
-import { useUser } from '~/composables/useUser';
-
 definePageMeta({
     layout: false,
 });
 
-const user = useUser();
-const router = useRouter();
-
 const form = reactive({
+    name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
 });
 
 const errorMsg = ref('');
 const isLoading = ref(false);
+const router = useRouter();
 
-const handleLogin = async () => {
+const handleRegister = async () => {
+    if (form.password !== form.confirmPassword) {
+        errorMsg.value = 'Пароли не совпадают';
+        return;
+    }
+
     isLoading.value = true;
     errorMsg.value = '';
 
     try {
-        const response = await $fetch<{
-            id: number,
-            name: string,
-            role: string,
-            email: string,
-        }>('/api/auth/login', {
+        await $fetch('/api/auth/register', {
             method: 'POST',
-            body: form
+            body: {
+                name: form.name,
+                email: form.email,
+                password: form.password
+            }
         });
 
-        user.value = response;
-
-        await router.push('/');
+        alert('Регистрация успешна! Теперь дождитесь одобрения администратором.');
+        router.push('/login');
 
     } catch (e: any) {
-        errorMsg.value = e.response?._data?.message || 'Ошибка входа';
+        errorMsg.value = e.response?._data?.message || 'Ошибка регистрации';
     } finally {
         isLoading.value = false;
     }
@@ -44,20 +45,30 @@ const handleLogin = async () => {
 </script>
 
 <template>
-    <div class="login-container">
-        <div class="login-card">
-            <h1>Вход в систему</h1>
-            <p class="subtitle">Информационный портал</p>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h1>Регистрация</h1>
+            <p class="subtitle">Подача заявки на доступ</p>
 
-            <form @submit.prevent="handleLogin">
+            <form @submit.prevent="handleRegister">
+                <div class="form-group">
+                    <label>ФИО</label>
+                    <input v-model="form.name" type="text" placeholder="Иванов Иван Иванович" required>
+                </div>
+
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" v-model="form.email" placeholder="student@dvfu.ru" required>
+                    <input v-model="form.email" type="email" placeholder="student@dvfu.ru" required>
                 </div>
 
                 <div class="form-group">
                     <label>Пароль</label>
-                    <input type="password" v-model="form.password" placeholder="••••••" required>
+                    <input v-model="form.password" type="password" placeholder="••••••" required minlength="5">
+                </div>
+
+                <div class="form-group">
+                    <label>Повторите пароль</label>
+                    <input v-model="form.confirmPassword" type="password" placeholder="••••••" required>
                 </div>
 
                 <div v-if="errorMsg" class="error-message">
@@ -65,25 +76,19 @@ const handleLogin = async () => {
                 </div>
 
                 <button type="submit" :disabled="isLoading">
-                    {{ isLoading ? 'Входим...' : 'Войти' }}
+                    {{ isLoading ? 'Отправка...' : 'Зарегистрироваться' }}
                 </button>
             </form>
 
-            <div class="hint">
-                <p>Тестовые данные:</p>
-                <small>ivanov@student.dvfu.ru / 12345</small><br>
-                <small>petrov@university.ru / 12345</small>
-            </div>
-
             <div class="footer-link">
-                Нет аккаунта? <NuxtLink to="/register">Подать заявку</NuxtLink>
+                Уже есть аккаунт? <NuxtLink to="/login">Войти</NuxtLink>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-.login-container {
+.auth-container {
     height: 100vh;
     display: flex;
     align-items: center;
@@ -92,7 +97,7 @@ const handleLogin = async () => {
     font-family: 'Open Sans', sans-serif;
 }
 
-.login-card {
+.auth-card {
     background: white;
     padding: 2.5rem;
     border-radius: 16px;
@@ -113,7 +118,7 @@ h1 {
 }
 
 .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     text-align: left;
 }
 
@@ -121,43 +126,36 @@ label {
     display: block;
     margin-bottom: 0.5rem;
     font-size: 0.9rem;
-    color: #333;
     font-weight: 600;
 }
 
 input {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 1rem;
-    transition: border-color 0.2s;
-}
-
-input:focus {
-    outline: none;
-    border-color: #3b82f6;
 }
 
 button {
     width: 100%;
     padding: 12px;
-    background-color: #3b82f6;
+    background-color: #10b981;
     color: white;
     border: none;
     border-radius: 8px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    margin-top: 10px;
 }
 
 button:hover {
-    background-color: #2563eb;
+    background-color: #059669;
 }
 
 button:disabled {
-    background-color: #93c5fd;
+    background-color: #a7f3d0;
     cursor: not-allowed;
 }
 
@@ -167,29 +165,16 @@ button:disabled {
     padding: 10px;
     border-radius: 6px;
     margin-bottom: 1rem;
-    font-size: 0.9rem;
-}
-
-.hint {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 1px solid #eee;
-    color: #888;
-    font-size: 0.85rem;
 }
 
 .footer-link {
-    margin-top: 15px;
+    margin-top: 20px;
     font-size: 0.9rem;
 }
 
 .footer-link a {
     color: #3b82f6;
     text-decoration: none;
-    font-weight: 600;
-}
-
-.footer-link a:hover {
-    text-decoration: underline;
+    font-weight: bold;
 }
 </style>

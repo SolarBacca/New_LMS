@@ -1,7 +1,7 @@
 export default defineNuxtRouteMiddleware(async (to) => {
     const user = useUser();
 
-    if (to.path === "/login") return;
+    if (to.path === "/login" || to.path === "/register") return;
 
     if (!user.value) {
         try {
@@ -11,7 +11,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
                 "/api/auth/user",
                 {
                     headers,
-                }
+                },
             );
 
             if (fetchedUser) {
