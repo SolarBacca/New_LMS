@@ -56,7 +56,8 @@ const roles = {
                         </td>
                         <td>{{ u.email }}</td>
                         <td>
-                            <select v-model="u.groupId" @change="updateUser(u)" class="group-select">
+                            <select :disabled="u.role === 'admin'" v-model="u.groupId" @change="updateUser(u)"
+                                class="group-select">
                                 <option :value="null">-- Без группы --</option>
                                 <option v-for="g in allGroups" :key="g.id" :value="g.id">
                                     {{ g.name }}
@@ -64,7 +65,7 @@ const roles = {
                             </select>
                         </td>
                         <td>
-                            <select v-model="u.role" @change="updateUser(u)">
+                            <select :disabled="u.role === 'admin'" v-model="u.role" @change="updateUser(u)">
                                 <option v-for="(label, key) in roles" :key="key" :value="key">
                                     {{ label }}
                                 </option>
@@ -72,7 +73,8 @@ const roles = {
                         </td>
                         <td>
                             <label class="switch">
-                                <input type="checkbox" v-model="u.isApproved" @change="updateUser(u)">
+                                <input :disabled="u.role === 'admin'" type="checkbox" v-model="u.isApproved"
+                                    @change="updateUser(u)">
                                 <span class="slider round"></span>
                             </label>
                             <span class="status-label">
