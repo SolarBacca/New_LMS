@@ -36,7 +36,7 @@ const createDept = async () => {
 };
 
 const potentialHeads = computed(() => {
-    return users.value?.filter(u => ['teacher', 'head', 'admin'].includes(u.role)) || [];
+    return users.value?.filter(u => ['teacher', 'head'].includes(u.role)) || [];
 });
 </script>
 
