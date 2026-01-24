@@ -69,12 +69,6 @@ const handleLogin = async () => {
                 </button>
             </form>
 
-            <div class="hint">
-                <p>Тестовые данные:</p>
-                <small>ivanov@student.dvfu.ru / 12345</small><br>
-                <small>petrov@university.ru / 12345</small>
-            </div>
-
             <div class="footer-link">
                 Нет аккаунта? <NuxtLink to="/register">Подать заявку</NuxtLink>
             </div>
