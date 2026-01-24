@@ -3,6 +3,29 @@
 const { data: myGroups, refresh: refreshGroups, error } = await useFetch<any>('/api/head/groups');
 const { data: allSubjects, refresh: refreshSubjects } = await useFetch<any>('/api/head/subjects');
 
+const { data: teachers } = await useFetch('/api/teachers');
+
+const assignTeacherForm = reactive({
+    teacherId: null as number | null,
+    subjectId: null as number | null
+});
+
+const assignTeacher = async () => {
+    if (!assignTeacherForm.teacherId || !assignTeacherForm.subjectId) return;
+
+    try {
+        await $fetch('/api/head/teachers', {
+            method: 'POST',
+            body: assignTeacherForm
+        });
+        alert('Преподаватель назначен!');
+        assignTeacherForm.teacherId = null;
+        assignTeacherForm.subjectId = null;
+    } catch (e) {
+        alert('Ошибка назначения');
+    }
+};
+
 const newGroup = ref('');
 const newSubject = ref('');
 
@@ -81,6 +104,29 @@ const assignSubject = async () => {
                 <ul>
                     <li v-for="s in allSubjects" :key="s.id">{{ s.name }}</li>
                 </ul>
+            </div>
+
+            <div class="card highlight-teacher">
+                <h3>🎓 Нагрузка преподавателей</h3>
+                <p class="hint">Кто какой предмет ведет</p>
+
+                <div class="assign-form">
+                    <label>Преподаватель:</label>
+                    <select v-model="assignTeacherForm.teacherId">
+                        <option :value="null">-- Выберите --</option>
+                        <option v-for="t in teachers" :key="t.id" :value="t.id">{{ t.name }}</option>
+                    </select>
+
+                    <label>Предмет:</label>
+                    <select v-model="assignTeacherForm.subjectId">
+                        <option :value="null">-- Выберите --</option>
+                        <option v-for="s in allSubjects" :key="s.id" :value="s.id">{{ s.name }}</option>
+                    </select>
+
+                    <button @click="assignTeacher" :disabled="!assignTeacherForm.teacherId">
+                        Назначить
+                    </button>
+                </div>
             </div>
 
             <div class="card highlight">
@@ -212,5 +258,13 @@ select {
 .assign-form button:disabled {
     background: #ccc;
     cursor: not-allowed;
+}
+
+.highlight-teacher {
+    border: 2px solid #fcd34d;
+}
+
+.btn-teacher {
+    background: #d97706 !important;
 }
 </style>

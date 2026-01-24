@@ -17,7 +17,7 @@ export const users = sqliteTable("users", {
     groupId: integer("group_id").references(() => groups.id),
     isApproved: integer("is_approved", { mode: "boolean" }).default(false),
     createdAt: integer("created_at", { mode: "timestamp" }).default(
-        sql`CURRENT_TIMESTAMP`
+        sql`CURRENT_TIMESTAMP`,
     ),
 });
 
@@ -53,7 +53,7 @@ export const groupSubjects = sqliteTable(
     },
     (t) => ({
         pk: primaryKey({ columns: [t.groupId, t.subjectId] }),
-    })
+    }),
 );
 
 export const topics = sqliteTable("topics", {
@@ -65,7 +65,7 @@ export const topics = sqliteTable("topics", {
     content: text("content"),
     authorId: integer("author_id").references(() => users.id),
     createdAt: integer("created_at", { mode: "timestamp" }).default(
-        sql`CURRENT_TIMESTAMP`
+        sql`CURRENT_TIMESTAMP`,
     ),
 });
 
@@ -81,9 +81,24 @@ export const messages = sqliteTable("messages", {
     parentId: integer("parent_id"),
     isPrivate: integer("is_private", { mode: "boolean" }).default(false),
     createdAt: integer("created_at", { mode: "timestamp" }).default(
-        sql`CURRENT_TIMESTAMP`
+        sql`CURRENT_TIMESTAMP`,
     ),
 });
+
+export const teacherSubjects = sqliteTable(
+    "teacher_subjects",
+    {
+        teacherId: integer("teacher_id")
+            .references(() => users.id, { onDelete: "cascade" })
+            .notNull(),
+        subjectId: integer("subject_id")
+            .references(() => subjects.id, { onDelete: "cascade" })
+            .notNull(),
+    },
+    (t) => ({
+        pk: primaryKey({ columns: [t.teacherId, t.subjectId] }),
+    }),
+);
 
 export const usersRelations = relations(users, ({ one }) => ({
     group: one(groups, {
