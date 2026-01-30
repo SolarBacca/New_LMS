@@ -108,8 +108,8 @@ async function createTopic() {
 <template>
     <main>
         <div class="list">
-            <div v-if="status === 'pending'">Загрузка тем...</div>
-            <div v-else class="topics-container">
+            <div v-if="status === 'pending' && !data">Загрузка тем...</div>
+            <div v-else class="topics-container" :class="{ 'refreshing': status === 'pending' }">
 
                 <div class="actions-bar" v-if="user && ['teacher', 'head', 'admin'].includes(user.role)">
                     <button @click="showCreateModal = true" class="create-btn">
@@ -280,5 +280,18 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+.topics-container.refreshing {
+    opacity: 0.7;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.loading-state,
+.empty-list {
+    padding: 20px;
+    text-align: center;
+    color: #888;
 }
 </style>

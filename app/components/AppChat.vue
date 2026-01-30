@@ -72,6 +72,10 @@ async function sendMessage() {
     }
 }
 
+onMounted(() => {
+    scrollToBottom();
+})
+
 watch(() => props.refreshSignal, async () => {
     console.log("Updating chat...");
     await refresh();
@@ -87,14 +91,17 @@ watch(() => props.refreshSignal, async () => {
             <p>Выберите тему слева, чтобы начать обсуждение</p>
         </div>
 
-        <div v-else-if="status === 'pending'" class="loading">
+        <div v-else-if="status === 'pending' && !topicData" class="loading">
             <p>Загрузка сообщений...</p>
         </div>
 
-        <div v-else-if="topicData" class="chat-layout">
+        <div v-else-if="topicData" class="chat-layout" :class="{ 'updating': status === 'pending' }">
             <div class="header">
                 <h2>{{ topicData.title }}</h2>
-                <p>Преподаватель: {{ topicData.author?.name }}</p>
+                <div class="header-info">
+                    <p>Преподаватель: {{ topicData.author?.name }}</p>
+                    <span v-if="status === 'pending'" class="sync-indicator">↻</span>
+                </div>
             </div>
 
             <div class="messages-container" ref="containerRef">
@@ -223,5 +230,32 @@ watch(() => props.refreshSignal, async () => {
 
 .input-dock>input::placeholder {
     color: rgba(255, 255, 255, 0.7);
+}
+
+.header-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sync-indicator {
+    font-size: 1.2rem;
+    color: #3b82f6;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.chat-layout.updating .messages-container {
+    opacity: 0.7;
+    transition: opacity 0.2s;
 }
 </style>
