@@ -117,32 +117,51 @@ async function createTopic() {
                     </button>
                 </div>
 
-                <div v-if="showCreateModal" class="modal-overlay">
-                    <div class="modal">
-                        <h3>Создание темы</h3>
-                        <form @submit.prevent="createTopic">
-                            <label>Предмет:</label>
-                            <select v-model="newTopic.subjectId" required>
-                                <option :value="null">-- Выберите предмет --</option>
-                                <option v-for="s in availableSubjects" :key="s.id" :value="s.id">
-                                    {{ s.name }}
-                                </option>
-                            </select>
-
-                            <label>Название:</label>
-                            <input v-model="newTopic.title" placeholder="Лекция №..." required>
-
-                            <label>Материал (описание):</label>
-                            <textarea v-model="newTopic.content" placeholder="Краткое содержание..."
-                                rows="3"></textarea>
-
-                            <div class="modal-actions">
-                                <button type="button" @click="showCreateModal = false">Отмена</button>
-                                <button type="submit" class="primary">Создать</button>
+                <Transition name="modal">
+                    <div v-if="showCreateModal" class="modal-overlay" @click.self="showCreateModal = false">
+                        <div class="modal-card">
+                            <div class="modal-header">
+                                <h3>Создание лекции</h3>
+                                <button class="close-icon" @click="showCreateModal = false">×</button>
                             </div>
-                        </form>
+
+                            <form @submit.prevent="createTopic">
+                                <div class="form-group">
+                                    <label>Предмет</label>
+                                    <div class="select-wrapper">
+                                        <select v-model="newTopic.subjectId" required>
+                                            <option :value="null" disabled>Выберите предмет...</option>
+                                            <option v-for="s in availableSubjects" :key="s.id" :value="s.id">
+                                                {{ s.name }}
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Название темы</label>
+                                    <input v-model="newTopic.title" placeholder="Например: Введение в алгоритмы"
+                                        required class="input-field">
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Краткое содержание</label>
+                                    <textarea v-model="newTopic.content" placeholder="Опишите, что будет на лекции..."
+                                        rows="4" class="input-field"></textarea>
+                                </div>
+
+                                <div class="modal-actions">
+                                    <button type="button" class="btn-secondary" @click="showCreateModal = false">
+                                        Отмена
+                                    </button>
+                                    <button type="submit" class="btn-primary">
+                                        Создать тему
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
+                </Transition>
 
                 <div v-for="topic in data" :key="topic.id" class="topic-item"
                     :class="{ 'active': selectedTopicId === topic.id, 'unread': topic.isUnread }"
@@ -293,5 +312,152 @@ main {
     padding: 20px;
     text-align: center;
     color: #888;
+}
+
+.modal-enter-active,
+.modal-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+    opacity: 0;
+}
+
+.modal-enter-active .modal-card,
+.modal-leave-active .modal-card {
+    transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.modal-enter-from .modal-card,
+.modal-leave-to .modal-card {
+    transform: scale(0.9) translateY(10px);
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-card {
+    background: white;
+    width: 100%;
+    max-width: 480px;
+    border-radius: 16px;
+    padding: 24px 32px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.close-icon {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #9ca3af;
+    padding: 0;
+    line-height: 1;
+}
+
+.close-icon:hover {
+    color: #374151;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+.input-field,
+select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    color: #1f2937;
+    background-color: #fff;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-field:focus,
+select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    /* Сияние при фокусе */
+}
+
+textarea.input-field {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 0.9rem;
+    border: none;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: #4b5563;
+}
+
+.btn-secondary:hover {
+    background-color: #f3f4f6;
 }
 </style>

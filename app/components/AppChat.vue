@@ -82,6 +82,21 @@ watch(() => props.refreshSignal, async () => {
     scrollToBottom();
 });
 
+const formatMessageTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+
+    if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    if (date.getFullYear() === now.getFullYear()) {
+        return date.toLocaleDateString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    }
+
+    return date.toLocaleDateString();
+};
+
 </script>
 
 <template>
@@ -114,7 +129,7 @@ watch(() => props.refreshSignal, async () => {
                         <div class="msg-author">{{ msg.user.name }}</div>
                         <div class="msg-content">{{ msg.content }}</div>
                         <div class="msg-time">
-                            {{ new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }}
+                            {{ formatMessageTime(msg.createdAt) }}
                         </div>
                     </div>
                 </div>

@@ -4,7 +4,7 @@ import {
     integer,
     primaryKey,
 } from "drizzle-orm/sqlite-core";
-import { relations, sql } from "drizzle-orm";
+import { relations } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
     id: integer("id").primaryKey({ autoIncrement: true }),
@@ -16,8 +16,8 @@ export const users = sqliteTable("users", {
         .default("student"),
     groupId: integer("group_id").references(() => groups.id),
     isApproved: integer("is_approved", { mode: "boolean" }).default(false),
-    createdAt: integer("created_at", { mode: "timestamp" }).default(
-        sql`CURRENT_TIMESTAMP`,
+    createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+        () => new Date(),
     ),
 });
 
@@ -64,11 +64,12 @@ export const topics = sqliteTable("topics", {
     title: text("title").notNull(),
     content: text("content"),
     authorId: integer("author_id").references(() => users.id),
-    createdAt: integer("created_at", { mode: "timestamp" }).default(
-        sql`CURRENT_TIMESTAMP`,
+    createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+        () => new Date(),
     ),
     updatedAt: integer("updated_at", { mode: "timestamp" })
-        .default(sql`(unixepoch())`)
+        .$defaultFn(() => new Date())
+        .$onUpdate(() => new Date())
         .notNull(),
 });
 
@@ -83,8 +84,8 @@ export const messages = sqliteTable("messages", {
     content: text("content").notNull(),
     parentId: integer("parent_id"),
     isPrivate: integer("is_private", { mode: "boolean" }).default(false),
-    createdAt: integer("created_at", { mode: "timestamp" }).default(
-        sql`CURRENT_TIMESTAMP`,
+    createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+        () => new Date(),
     ),
 });
 
@@ -113,7 +114,7 @@ export const topicReads = sqliteTable(
             .references(() => topics.id, { onDelete: "cascade" })
             .notNull(),
         lastReadAt: integer("last_read_at", { mode: "timestamp" })
-            .default(sql`(unixepoch())`)
+            .$defaultFn(() => new Date())
             .notNull(),
     },
     (t) => ({
