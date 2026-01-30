@@ -1,12 +1,39 @@
 <script setup lang="ts">
 
-const { data: topics, status, refresh } = await useFetch('/api/topics');
+const { data, refresh, status } = await useFetch('/api/topics', {
+    transform: (response) => {
+        const readsMap = new Map();
+        response.reads.forEach(r => readsMap.set(r.topicId, new Date(r.lastReadAt)));
+
+        return response.topics.map(topic => {
+            const lastRead = readsMap.get(topic.id);
+            const lastUpdate = new Date(topic.updatedAt);
+
+            const isUnread = !lastRead || lastUpdate > lastRead;
+
+            return {
+                ...topic,
+                isUnread
+            };
+        });
+    }
+});
+
+const selectTopic = async (topicId: number) => {
+    selectedTopicId.value = topicId;
+
+    if (data.value) {
+        const t = data.value.find(t => t.id === topicId);
+        if (t) t.isUnread = false;
+    }
+
+    await $fetch<any>('/api/topics/read', {
+        method: 'POST',
+        body: { topicId }
+    });
+};
 
 const selectedTopicId = ref<number | null>(null);
-
-function selectTopic(id: number) {
-    selectedTopicId.value = id;
-}
 
 const user = useUser();
 
@@ -87,10 +114,14 @@ async function createTopic() {
                     </div>
                 </div>
 
-                <div v-for="topic in topics" :key="topic.id" class="topic-item"
-                    :class="{ active: selectedTopicId === topic.id }" @click="selectTopic(topic.id)">
-                    <h3>{{ topic.title }}</h3>
-                    <p class="topic-meta">{{ topic.subject.name }}</p>
+                <div v-for="topic in data" :key="topic.id" class="topic-item"
+                    :class="{ 'active': selectedTopicId === topic.id, 'unread': topic.isUnread }"
+                    @click="selectTopic(topic.id)">
+                    <div class="topic-header">
+                        <span class="topic-subject">{{ topic.subject.name }}</span>
+                        <span v-if="topic.isUnread" class="unread-dot">●</span>
+                    </div>
+                    <div class="topic-title">{{ topic.title }}</div>
                 </div>
             </div>
         </div>
@@ -201,5 +232,22 @@ main {
     padding: 8px 15px;
     border-radius: 6px;
     cursor: pointer;
+}
+
+.topic-item.unread .topic-title {
+    font-weight: bold;
+    color: #000;
+}
+
+.unread-dot {
+    color: #ef4444;
+    font-size: 1.2rem;
+    line-height: 0.5;
+}
+
+.topic-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 </style>

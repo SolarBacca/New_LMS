@@ -67,6 +67,9 @@ export const topics = sqliteTable("topics", {
     createdAt: integer("created_at", { mode: "timestamp" }).default(
         sql`CURRENT_TIMESTAMP`,
     ),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+        .default(sql`(unixepoch())`)
+        .notNull(),
 });
 
 export const messages = sqliteTable("messages", {
@@ -97,6 +100,24 @@ export const teacherSubjects = sqliteTable(
     },
     (t) => ({
         pk: primaryKey({ columns: [t.teacherId, t.subjectId] }),
+    }),
+);
+
+export const topicReads = sqliteTable(
+    "topic_reads",
+    {
+        userId: integer("user_id")
+            .references(() => users.id, { onDelete: "cascade" })
+            .notNull(),
+        topicId: integer("topic_id")
+            .references(() => topics.id, { onDelete: "cascade" })
+            .notNull(),
+        lastReadAt: integer("last_read_at", { mode: "timestamp" })
+            .default(sql`(unixepoch())`)
+            .notNull(),
+    },
+    (t) => ({
+        pk: primaryKey({ columns: [t.userId, t.topicId] }),
     }),
 );
 

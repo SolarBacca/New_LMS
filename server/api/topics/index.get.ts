@@ -1,16 +1,14 @@
-import { topics, groupSubjects } from "~~/server/database/schema";
-import { eq, inArray, desc } from "drizzle-orm";
+import { topics, groupSubjects, topicReads } from "~~/server/database/schema";
+import { eq, inArray, desc, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
     const user = await getUserFromSession(event);
-    if (!user) {
-        throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-    }
+    if (!user) throw createError({ statusCode: 401 });
+
+    let accessibleTopics = [];
 
     if (user.role === "student") {
-        if (!user.groupId) {
-            return [];
-        }
+        if (!user.groupId) return { topics: [], reads: [] };
 
         const allowedSubjects = await db
             .select({ id: groupSubjects.subjectId })
@@ -18,26 +16,33 @@ export default defineEventHandler(async (event) => {
             .where(eq(groupSubjects.groupId, user.groupId));
 
         const subjectIds = allowedSubjects.map((s) => s.id);
+        if (subjectIds.length === 0) return { topics: [], reads: [] };
 
-        if (subjectIds.length === 0) {
-            return [];
-        }
-
-        return await db.query.topics.findMany({
+        accessibleTopics = await db.query.topics.findMany({
             where: inArray(topics.subjectId, subjectIds),
             with: {
                 subject: true,
                 author: { columns: { name: true, role: true } },
             },
-            orderBy: [desc(topics.createdAt)],
+            orderBy: [desc(topics.updatedAt)],
+        });
+    } else {
+        accessibleTopics = await db.query.topics.findMany({
+            with: {
+                subject: true,
+                author: { columns: { name: true, role: true } },
+            },
+            orderBy: [desc(topics.updatedAt)],
         });
     }
 
-    return await db.query.topics.findMany({
-        with: {
-            subject: true,
-            author: { columns: { name: true, role: true } },
-        },
-        orderBy: [desc(topics.createdAt)],
-    });
+    const myReads = await db
+        .select()
+        .from(topicReads)
+        .where(eq(topicReads.userId, user.id));
+
+    return {
+        topics: accessibleTopics,
+        reads: myReads,
+    };
 });

@@ -1,4 +1,9 @@
-import { messages, topics, groupSubjects } from "~~/server/database/schema";
+import {
+    messages,
+    topics,
+    groupSubjects,
+    topicReads,
+} from "~~/server/database/schema";
 import { eq, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
@@ -20,7 +25,7 @@ export default defineEventHandler(async (event) => {
         const hasAccess = await db.query.groupSubjects.findFirst({
             where: and(
                 eq(groupSubjects.groupId, user.groupId!),
-                eq(groupSubjects.subjectId, topic.subjectId)
+                eq(groupSubjects.subjectId, topic.subjectId),
             ),
         });
 
@@ -42,6 +47,25 @@ export default defineEventHandler(async (event) => {
         })
         .returning()
         .get();
+
+    const now = new Date();
+
+    await db
+        .update(topics)
+        .set({ updatedAt: now })
+        .where(eq(topics.id, body.topicId));
+
+    await db
+        .insert(topicReads)
+        .values({
+            userId: user.id,
+            topicId: body.topicId,
+            lastReadAt: now,
+        })
+        .onConflictDoUpdate({
+            target: [topicReads.userId, topicReads.topicId],
+            set: { lastReadAt: now },
+        });
 
     return newMessage;
 });
