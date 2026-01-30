@@ -5,6 +5,7 @@ interface Message {
     content: string;
     createdAt: string;
     user: {
+        id: number;
         name: string;
         role: string;
     };
@@ -26,6 +27,8 @@ const props = defineProps<{
     topicId: number | null,
     refreshSignal?: number
 }>();
+
+const user = useUser();
 
 const url = computed(() => props.topicId ? `/api/topics/${props.topicId}` : '');
 
@@ -74,6 +77,8 @@ async function sendMessage() {
 
 onMounted(() => {
     scrollToBottom();
+
+    console.log(user);
 })
 
 watch(() => props.refreshSignal, async () => {
@@ -125,11 +130,19 @@ const formatMessageTime = (dateString: string) => {
                         <strong>Материал:</strong> {{ topicData.content }}
                     </div>
 
-                    <div v-for="msg in topicData.messages" :key="msg.id" class="message">
-                        <div class="msg-author">{{ msg.user.name }}</div>
-                        <div class="msg-content">{{ msg.content }}</div>
-                        <div class="msg-time">
-                            {{ formatMessageTime(msg.createdAt) }}
+                    <div v-for="msg in topicData.messages" :key="msg.id" class="message-row"
+                        :class="{ 'mine': msg.user.id === user?.id }">
+                        <div class="message-bubble">
+
+                            <div class="msg-author" v-if="msg.user.id !== user?.id">
+                                {{ msg.user.name }}
+                            </div>
+
+                            <div class="msg-content">{{ msg.content }}</div>
+
+                            <div class="msg-time">
+                                {{ formatMessageTime(msg.createdAt) }}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -176,7 +189,44 @@ const formatMessageTime = (dateString: string) => {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 8px;
+}
+
+.message-row {
+    display: flex;
+    width: 100%;
+}
+
+.message-row {
+    justify-content: flex-start;
+}
+
+.message-row.mine {
+    justify-content: flex-end;
+}
+
+.message-row.mine .msg-time {
+    color: #ffffffd7;
+}
+
+.message-bubble {
+    max-width: 70%;
+    padding: 10px 14px;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    word-wrap: break-word;
+}
+
+.message-row:not(.mine) .message-bubble {
+    background: white;
+    border-radius: 12px 12px 12px 2px;
+    color: #1f2937;
+}
+
+.message-row.mine .message-bubble {
+    background: #3b82f6;
+    color: white;
+    border-radius: 12px 12px 2px 12px;
 }
 
 .header {
@@ -210,10 +260,25 @@ const formatMessageTime = (dateString: string) => {
 }
 
 .msg-author {
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: #555;
-    margin-bottom: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #d97706;
+    margin-bottom: 2px;
+}
+
+.msg-meta {
+    font-size: 0.65rem;
+    text-align: right;
+    margin-top: 4px;
+    opacity: 0.7;
+}
+
+.message-row.mine .msg-meta {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.message-row:not(.mine) .msg-meta {
+    color: #9ca3af;
 }
 
 .msg-time {

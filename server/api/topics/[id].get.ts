@@ -12,9 +12,11 @@ export default defineEventHandler(async (event) => {
         where: eq(topics.id, Number(id)),
         with: {
             subject: true,
-            author: { columns: { name: true, role: true } },
+            author: { columns: { id: true, name: true, role: true } },
             messages: {
-                with: { user: { columns: { name: true, role: true } } },
+                with: {
+                    user: { columns: { id: true, name: true, role: true } },
+                },
                 orderBy: (messages, { asc }) => [asc(messages.createdAt)],
             },
         },
@@ -27,7 +29,7 @@ export default defineEventHandler(async (event) => {
         const accessRecord = await db.query.groupSubjects.findFirst({
             where: and(
                 eq(groupSubjects.groupId, user.groupId!),
-                eq(groupSubjects.subjectId, topic.subjectId)
+                eq(groupSubjects.subjectId, topic.subjectId),
             ),
         });
 

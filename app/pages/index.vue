@@ -197,19 +197,28 @@ main {
 }
 
 .topic-item {
-    padding: 15px;
-    border-bottom: 1px solid #eee;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
 }
 
 .topic-item:hover {
-    background-color: #e9ecef;
+    background-color: #e7e8ea;
 }
 
 .topic-item.active {
-    background-color: #dbeafe;
-    border-left: 4px solid #3b82f6;
+    background-color: #eff6ff;
+    border-left-color: #3b82f6;
+}
+
+.topic-subject {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .topic-meta {
@@ -284,21 +293,36 @@ main {
     cursor: pointer;
 }
 
+.topic-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #111827;
+    line-height: 1.4;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .topic-item.unread .topic-title {
-    font-weight: bold;
+    font-weight: 700;
     color: #000;
 }
 
 .unread-dot {
-    color: #ef4444;
-    font-size: 1.2rem;
-    line-height: 0.5;
+    height: 8px;
+    width: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    display: inline-block;
+    font-size: 0;
 }
 
 .topic-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 4px;
 }
 
 .topics-container.refreshing {
