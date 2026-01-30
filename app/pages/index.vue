@@ -19,6 +19,36 @@ const { data, refresh, status } = await useFetch('/api/topics', {
     }
 });
 
+const chatRefreshTrigger = ref(0);
+
+let eventSource: EventSource | null = null;
+
+onMounted(() => {
+    eventSource = new EventSource('/api/stream');
+
+    eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'new_message') {
+            if (selectedTopicId.value === data.topicId) {
+                chatRefreshTrigger.value++;
+            }
+            refresh();
+        }
+    };
+
+    eventSource.onerror = () => {
+        // Maybe do something here..
+    };
+});
+
+onUnmounted(() => {
+    if (eventSource) {
+        eventSource.close();
+    }
+});
+
+
 const selectTopic = async (topicId: number) => {
     selectedTopicId.value = topicId;
 
@@ -126,7 +156,8 @@ async function createTopic() {
             </div>
         </div>
 
-        <AppChat :topic-id="selectedTopicId" :key="selectedTopicId || 'empty'"></AppChat>
+        <AppChat :refresh-signal="chatRefreshTrigger" :topic-id="selectedTopicId" :key="selectedTopicId || 'empty'">
+        </AppChat>
 
     </main>
 </template>

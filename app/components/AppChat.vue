@@ -23,7 +23,8 @@ interface TopicDetail {
 }
 
 const props = defineProps<{
-    topicId: number | null
+    topicId: number | null,
+    refreshSignal?: number
 }>();
 
 const url = computed(() => props.topicId ? `/api/topics/${props.topicId}` : '');
@@ -70,6 +71,13 @@ async function sendMessage() {
         isSending.value = false;
     }
 }
+
+watch(() => props.refreshSignal, async () => {
+    console.log("Updating chat...");
+    await refresh();
+    scrollToBottom();
+});
+
 </script>
 
 <template>

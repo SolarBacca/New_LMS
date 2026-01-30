@@ -5,6 +5,7 @@ import {
     topicReads,
 } from "~~/server/database/schema";
 import { eq, and } from "drizzle-orm";
+import { globalEmitter } from "../utils/emitter";
 
 export default defineEventHandler(async (event) => {
     const user = await getUserFromSession(event);
@@ -66,6 +67,10 @@ export default defineEventHandler(async (event) => {
             target: [topicReads.userId, topicReads.topicId],
             set: { lastReadAt: now },
         });
+
+    globalEmitter.emit("new_message", {
+        topicId: body.topicId,
+    });
 
     return newMessage;
 });
