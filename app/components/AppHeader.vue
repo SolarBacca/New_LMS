@@ -23,7 +23,7 @@ const handleLogout = async () => {
         <div class="main-name">
             <img src="/logo.svg" alt="logo">
             <h1>
-                <RouterLink style="text-decoration: none; color: inherit;" to="/">Платформа</RouterLink>
+                <RouterLink style="text-decoration: none; color: inherit;" to="/">SkillHub</RouterLink>
             </h1>
         </div>
         <nav v-if="user">
